@@ -194,15 +194,24 @@ def classificar_noticia(texto: str, modelo=None, vectorizer=None):
     X_vec = vectorizer.transform([texto])
     rotulo = int(modelo.predict(X_vec)[0])
 
-    confianca = 1.0
+    probabilidades_por_classe = {0: 0.0, 1: 0.0}
     if hasattr(modelo, "predict_proba"):
         probas = modelo.predict_proba(X_vec)[0]
-        confianca = float(max(probas))
+        for classe, probabilidade in zip(modelo.classes_, probas):
+            classe = int(classe)
+            if classe in probabilidades_por_classe:
+                probabilidades_por_classe[classe] = float(probabilidade)
+    else:
+        probabilidades_por_classe[rotulo] = 1.0
 
     return {
         "rotulo": rotulo,
         "classe": LABEL_TEXT[rotulo],
-        "confianca": confianca
+        "confianca": probabilidades_por_classe[rotulo],
+        "probabilidades": {
+            "ruim": probabilidades_por_classe[0],
+            "boa": probabilidades_por_classe[1],
+        },
     }
 
 

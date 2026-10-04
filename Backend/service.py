@@ -3,6 +3,7 @@ import re
 import sys
 import unicodedata
 from contextlib import contextmanager
+from dataclasses import dataclass
 from pathlib import Path
 
 import joblib
@@ -24,6 +25,13 @@ TIPO_MAPA = {
     "polui": "Poluição e Degradação",
     "preserva": "Preservação Ambiental",
 }
+
+
+@dataclass(frozen=True)
+class ClassificationResult:
+    response: str
+    positive_probability: float
+    negative_probability: float
 
 
 @contextmanager
@@ -69,7 +77,7 @@ class MoodNewsService:
             vectorizer_qualidade = joblib.load(VECTORIZER_PATH_QUALIDADE)
         return cls(modelo_tipo, modelo_qualidade, vectorizer_qualidade)
 
-    def classify(self, texto: str) -> str:
+    def classify_result(self, texto: str) -> ClassificationResult:
         texto = texto.strip()
         if not texto:
             raise ValueError("O texto da notícia não pode estar vazio.")
@@ -91,15 +99,27 @@ class MoodNewsService:
             self.modelo_qualidade,
             self.vectorizer_qualidade,
         )
+        probabilidade_boa = qualidade["probabilidades"]["boa"]
+        porcentagem_boa = round(probabilidade_boa * 100)
+        porcentagem_ruim = 100 - porcentagem_boa
         confianca = int(qualidade["confianca"] * 100)
         if qualidade["rotulo"] == 1:
-            return (
+            response = (
                 "Que ótima notícia! 🌱\n\n"
                 f"Essa notícia tem um impacto positivo no meio ambiente e está relacionada a {tipo_final}.\n\n"
                 f"Confiança da IA: {confianca}%"
             )
-        return (
-            "Infelizmente, esta notícia traz um impacto negativo. ⚠️\n\n"
-            f"Ela aborda problemas de {tipo_final}, o que é preocupante para a nossa natureza.\n\n"
-            f"Confiança da IA: {confianca}%"
+        else:
+            response = (
+                "Infelizmente, esta notícia traz um impacto negativo. ⚠️\n\n"
+                f"Ela aborda problemas de {tipo_final}, o que é preocupante para a nossa natureza.\n\n"
+                f"Confiança da IA: {confianca}%"
+            )
+        return ClassificationResult(
+            response=response,
+            positive_probability=porcentagem_boa / 100,
+            negative_probability=porcentagem_ruim / 100,
         )
+
+    def classify(self, texto: str) -> str:
+        return self.classify_result(texto).response

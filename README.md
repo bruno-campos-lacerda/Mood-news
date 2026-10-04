@@ -36,11 +36,20 @@ O classificador de qualidade também oferece aprendizado incremental pelo termin
 python Backend/classifier.py --interactive
 ```
 
+O aplicativo exibe o gráfico estático de distribuição de notícias por cinco dias em **Gráficos**. Para recriá-lo manualmente a partir do dataset, sem alterar os modelos de IA, execute:
+
+```bash
+python Backend/scripts/treinar_qualidade.py --grafico
+```
+
+O botão **Histórico do chat** abre um gráfico persistente das análises feitas no chatbot. Cada notícia é exibida com a probabilidade estimada pela IA de ser ruim (azul) e boa (verde); o gráfico tem rolagem horizontal e o histórico fica salvo em `app_pyside6/data/chat_history.sqlite3`.
+
 O gerador opcional de dataset (`Backend/scripts/build_dataset.py`) busca notícias na internet quando executado. Ele não é necessário para instalar ou usar o aplicativo; a classificação da aplicação usa os modelos e dados locais.
 
 ## Dependências
 
 - `PySide6` — interface desktop
 - `scikit-learn`, `numpy`, `pandas` e `joblib` — modelos e treinamento
+- `matplotlib` — geração manual do gráfico
 
 *Projeto educacional — 2026*
