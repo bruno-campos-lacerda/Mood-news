@@ -142,7 +142,7 @@ class HomeScreen(QMainWindow):
         self.chat_button.setObjectName("navigationButton")
         self.chat_button.clicked.connect(self._show_chat)
         self.chat_button.hide()
-        self.chart_button = QPushButton("Gráficos")
+        self.chart_button = QPushButton("Historico de treinamento")
         self.chart_button.setObjectName("navigationButton")
         self.chart_button.clicked.connect(self._show_chart)
         header_layout.addWidget(self.chat_button)
